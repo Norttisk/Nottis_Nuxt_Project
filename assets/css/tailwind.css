@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    @apply bg-[#1F2023] text-gray-900;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all 0.3s ease;
+}
+.slide-fade-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+}
+.slide-fade-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* message loading */
+@keyframes dots {
+    0% {
+        content: "";
+    }
+    33% {
+        content: ".";
+    }
+    66% {
+        content: "..";
+    }
+    100% {
+        content: "...";
+    }
+}
+
+.dots-loading::after {
+    content: "..."; /* fallback khi animation chưa load */
+    animation: dots 1s steps(4, end) infinite;
+}
+/* scroll bar */
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px; /* Scrollbar width */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #e5e5e5; /* Track color */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c5c5c5; /* Thumb color */
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a3a3a3; /* Thumb color on hover */
+}
