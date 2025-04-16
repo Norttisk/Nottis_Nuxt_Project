@@ -183,11 +183,7 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from "vue";
 import { useGrokApi } from "@/utils/grokApi";
-import {
-    useFakeStoreApi,
-    formatProductsForPrompt,
-    type Product,
-} from "@/utils/storeApi";
+import { SYSTEM_PROMPT, DEFAULT_MESSAGES } from "~/utils/prompt";
 
 // Interfaces
 interface Option {
@@ -201,28 +197,6 @@ interface Message {
     mainContent?: string; // Nội dung chính của tin nhắn (không bao gồm lựa chọn)
     options?: Option[]; // Danh sách các lựa chọn
 }
-
-// Constants
-const SYSTEM_PROMPT: Message = {
-    role: "system",
-    content:
-        "You are a helpful assistant. Answer the user's questions as best as you can, response in the range of 100 words(include options) . When providing multiple options (max 4), format them as a numbered list (e.g., 1. Option text) using vietnamese as response.",
-};
-//using fakeStoreApi to get products
-// Fetch products using the composable
-// const { products, error: fetchError } = useFakeStoreApi();
-
-// // Initialize system prompt with product data
-// if (fetchError.value) {
-//     console.error("Failed to fetch products:", fetchError.value);
-// } else if (products.value) {
-//     const productSummary = formatProductsForPrompt(products.value);
-//     SYSTEM_PROMPT.content = `You are a helpful assistant with access to product data: ${productSummary}. Answer the user's questions as best as you can, incorporating product information when relevant.`;
-// }
-
-const DEFAULT_MESSAGES: Message[] = [
-    { role: "assistant", content: "Hi, how can I help you today?" },
-];
 
 // Reactive state
 const isVisible = ref(false);
@@ -276,27 +250,35 @@ const parseMessageOptions = (message: Message): Message => {
 
     const lines = message.content.split("\n");
     const options: Option[] = [];
-    let mainContent = "";
+    let situationContent = "";
+    let npcContent = "";
+    let introContent = "";
     let isOptionSection = false;
 
     for (const line of lines) {
         const trimmedLine = line.trim();
-        if (
-            trimmedLine.match(/^\d+\.\s+/) ||
-            trimmedLine.match(/^-\s+/) ||
-            trimmedLine.match(/^\*\s+/)
-        ) {
+        if (trimmedLine.startsWith("Options:")) {
             isOptionSection = true;
-            const optionText = trimmedLine.replace(/^\d+\.\s+|^-\s+|\*\s+/, "");
+            continue;
+        }
+        if (isOptionSection && trimmedLine.match(/^\d+\.\s+/)) {
+            const optionText = trimmedLine.replace(/^\d+\.\s+/, "");
             options.push({
                 text: optionText,
-                prompt: optionText, // Prompt mặc định là nội dung của lựa chọn
+                prompt: optionText,
             });
-        } else if (!isOptionSection) {
-            mainContent += (mainContent ? "\n" : "") + line;
+        } else if (trimmedLine.startsWith("Situation:")) {
+            situationContent = trimmedLine.replace(/^Situation:\s*/, "");
+        } else if (trimmedLine.startsWith("NPC:")) {
+            npcContent = trimmedLine.replace(/^NPC:\s*/, "");
+        } else if (!isOptionSection && !trimmedLine.startsWith("-")) {
+            introContent += (introContent ? "\n" : "") + line;
         }
     }
-
+    // Gộp situation và NPC thành mainContent, ưu tiên situation và NPC
+    const mainContent =
+        [situationContent, npcContent].filter(Boolean).join("\n").trim() ||
+        introContent.trim();
     if (options.length > 0) {
         return {
             ...message,

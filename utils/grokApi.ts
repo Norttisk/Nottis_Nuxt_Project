@@ -21,7 +21,7 @@ export const useGrokApi = () => {
                     messages: defaultMessage,
                     model: "grok-2-latest",
                     stream: false,
-                    temperature: 0,
+                    temperature: 0.7,
                 },
             });
         },
