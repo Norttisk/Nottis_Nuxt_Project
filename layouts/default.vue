@@ -44,6 +44,13 @@
             ></path>
         </svg>
     </button>
+    <button
+        @click="clearChatHistory"
+        class="fixed bottom-4 left-4 inline-flex items-center justify-center text-sm font-medium border rounded-full w-16 h-16 bg-black hover:bg-gray-700 text-white"
+        type="button"
+    >
+        Clear
+    </button>
     <Transition name="slide-fade">
         <div
             v-show="isVisible"
@@ -51,7 +58,7 @@
                 box-shadow: 0 0 #0000, 0 0 #0000, 0 1px 2px 0 rgb(0 0 0 / 0.05);
                 transform: translateX(-7%);
             "
-            class="fixed bottom-[calc(4rem+1.5rem)] right-0 top-[80px] mr-4 bg-[#2E3033] p-6 rounded-lg w-[85%] h-[634px]"
+            class="fixed right-0 top-[80px] mr-4 bg-[#2E3033] p-6 rounded-lg w-[85%] h-[75vh]"
         >
             <!-- Heading -->
             <div class="flex flex-col space-y-1.5 pb-6">
@@ -66,7 +73,7 @@
             <!-- Chat Container -->
             <div
                 ref="chatContainer"
-                class="pr-4 h-[474px] custom-scrollbar"
+                class="pr-4 h-[50vh] custom-scrollbar"
                 style="min-width: 100%; overflow-y: scroll"
             >
                 <div
@@ -271,6 +278,8 @@ const parseMessageOptions = (message: Message): Message => {
             mainContent += trimmedLine.replace(/^Situation:\s*/, "") + "\n";
         } else if (trimmedLine.startsWith("NPC:")) {
             mainContent += trimmedLine.replace(/^NPC:\s*/, "") + "\n";
+        } else if (trimmedLine.startsWith('"') || trimmedLine.startsWith("*")) {
+            mainContent += trimmedLine + "\n";
         }
     }
 
@@ -290,6 +299,18 @@ const selectOption = async (option: Option) => {
     // Simulate user input
     userInput.value = option.prompt;
     await sendMessage();
+};
+
+// Function to clear chat history
+const clearChatHistory = () => {
+    try {
+        localStorage.removeItem("chatHistory");
+        promptPayload.value = [SYSTEM_PROMPT];
+        chatMessages.value = [...DEFAULT_MESSAGES];
+        console.log("Chat history cleared.");
+    } catch (error) {
+        console.error("Failed to clear chat history:", error);
+    }
 };
 
 // Main functions

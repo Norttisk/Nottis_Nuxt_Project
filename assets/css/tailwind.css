@@ -6,6 +6,12 @@ body {
     @apply bg-[#1F2023] text-gray-900;
 }
 
+pre {
+    max-width: 1000px; /* Hoặc số pixel tùy ý */
+    white-space: pre-wrap; /* Cho phép ngắt dòng */
+    overflow-x: auto; /* Thêm thanh cuộn nếu cần */
+}
+
 .slide-fade-enter-active,
 .slide-fade-leave-active {
     transition: all 0.3s ease;
