@@ -125,7 +125,9 @@
                         ></span>
                         <span v-else style="color: #c5c5c5">
                             <!-- Hiển thị nội dung chính của tin nhắn -->
-                            {{ message.mainContent || message.content }}
+                            <pre style="font-family: inherit">{{
+                                message.mainContent || message.content
+                            }}</pre>
                             <!-- Hiển thị các lựa chọn nếu có -->
                             <div
                                 v-if="message.options && message.options.length"
@@ -250,10 +252,8 @@ const parseMessageOptions = (message: Message): Message => {
 
     const lines = message.content.split("\n");
     const options: Option[] = [];
-    let situationContent = "";
-    let npcContent = "";
-    let introContent = "";
     let isOptionSection = false;
+    let mainContent = "";
 
     for (const line of lines) {
         const trimmedLine = line.trim();
@@ -268,18 +268,14 @@ const parseMessageOptions = (message: Message): Message => {
                 prompt: optionText,
             });
         } else if (trimmedLine.startsWith("Situation:")) {
-            situationContent = trimmedLine.replace(/^Situation:\s*/, "");
+            mainContent += trimmedLine.replace(/^Situation:\s*/, "") + "\n";
         } else if (trimmedLine.startsWith("NPC:")) {
-            npcContent = trimmedLine.replace(/^NPC:\s*/, "");
-        } else if (!isOptionSection && !trimmedLine.startsWith("-")) {
-            introContent += (introContent ? "\n" : "") + line;
+            mainContent += trimmedLine.replace(/^NPC:\s*/, "") + "\n";
         }
     }
-    // Gộp situation và NPC thành mainContent, ưu tiên situation và NPC
-    const mainContent =
-        [situationContent, npcContent].filter(Boolean).join("\n").trim() ||
-        introContent.trim();
+
     if (options.length > 0) {
+        console.log("mainContent:", mainContent);
         return {
             ...message,
             mainContent: mainContent.trim() || undefined,
